@@ -1,0 +1,26 @@
+# Android
+.gradle
+build/
+app/build/
+*.apk
+*.aab
+*.ap_
+*.aexp
+*.keystore
+*.jks
+local.properties
+.idea/
+.DS_Store
+
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+logs/
+auth/
+cache/
+queue/
+*.enc
+
+# IDE files
+.vscode/

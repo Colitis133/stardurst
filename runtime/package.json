@@ -1,0 +1,13 @@
+{
+  "name": "stardust-runtime",
+  "version": "0.1.0",
+  "description": "STARDUST WhatsApp assistant runtime",
+  "main": "launcher.js",
+  "dependencies": {
+    "@whiskeysockets/baileys": "^6.4.0",
+    "date-fns": "^4.1.0",
+    "node-fetch": "^2.6.7",
+    "sqlite3": "^5.1.2",
+    "ws": "^8.11.0"
+  }
+}

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="General">
+
+        <SwitchPreference
+            android:key="bubble_toggle"
+            android:title="Floating Bubble"
+            android:summary="Show the floating bubble over other apps"
+            android:defaultValue="true" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Account">
+
+        <Preference
+            android:key="logout"
+            android:title="Log Out"
+            android:summary="Unlink your WhatsApp account from this device" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Developer">
+
+        <Preference
+            android:key="view_logs"
+            android:title="View Logs"
+            android:summary="See raw logs from the runtime for troubleshooting" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>
