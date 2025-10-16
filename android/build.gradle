@@ -1,0 +1,29 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+        // Add JitPack repository for nodejs-mobile
+        maven { url 'https://jitpack.io' }
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:7.4.2' // Use your project's actual Gradle version
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.0' // Use your project's actual Kotlin version
+        // Add the nodejs-mobile plugin classpath
+        classpath 'com.github.nodejs-mobile:nodejs-mobile-gradle-plugin:0.4.0' // Match nodejs-mobile version
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        // Add JitPack repository for nodejs-mobile
+        maven { url 'https://jitpack.io' }
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
