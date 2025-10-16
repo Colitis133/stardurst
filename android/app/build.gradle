@@ -1,6 +1,6 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-apply plugin: 'com.nodejs.mobile'
+// ...existing code... (removed nodejs-mobile Gradle plugin)
 
 android {
     compileSdkVersion 33
@@ -26,11 +26,7 @@ android {
     }
 }
 
-nodemobile {
-    nodeProjectDir = file("../../runtime")
-    nodeExecutableName = "node"
-    nodeArgs = ["launcher.js"]
-}
+// ...existing code... (nodejs-mobile gradle plugin removed; native libs added manually)
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
@@ -44,6 +40,5 @@ dependencies {
     implementation "io.ktor:ktor-websockets:1.6.7"
     implementation "io.ktor:ktor-gson:1.6.7"
 
-    // Node.js for Mobile
-    implementation 'com.github.janeasystems.nodejs-mobile:nodejs-mobile-android:0.4.0'
+    // Node.js for Mobile - native libs bundled manually in src/main/jniLibs and headers in libnode/include
 }

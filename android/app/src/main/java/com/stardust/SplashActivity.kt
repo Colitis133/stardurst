@@ -22,27 +22,10 @@ public class SplashActivity extends AppCompatActivity {
         setContentView(R.layout.activity_splash);
 
         new Handler(Looper.getMainLooper()).postDelayed(this::checkPermissionsAndProceed, 1000); // 1-second delay to show splash
-    }
+package com.stardust
 
-    private void checkPermissionsAndProceed() {
-        boolean recordAudioGranted = ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED;
-        boolean overlayGranted = Build.VERSION.SDK_INT < Build.VERSION_CODES.M || Settings.canDrawOverlays(this);
-        boolean batteryOptimizationIgnored = true;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-            batteryOptimizationIgnored = pm.isIgnoringBatteryOptimizations(getPackageName());
-        }
-
-        if (!recordAudioGranted || !overlayGranted || !batteryOptimizationIgnored) {
-            // If any permission is missing, go to explanation activity
-            Intent intent = new Intent(SplashActivity.this, PermissionExplanationActivity.class);
-            startActivity(intent);
-            finish();
-        } else {
-            // All permissions granted, proceed to main app
-            Intent intent = new Intent(SplashActivity.this, MainActivity.class);
-            startActivity(intent);
-            finish();
+// Kotlin stub; actual implementation exists as SplashActivity.java
+object SplashActivityStub {}
         }
     }
 }

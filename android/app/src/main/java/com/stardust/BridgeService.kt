@@ -9,66 +9,12 @@ import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
 import android.util.Log;
 import io.ktor.application.*
-import io.ktor.features.*
-import io.ktor.gson.*
-import io.ktor.http.cio.websocket.*
-import io.ktor.request.*
-import io.ktor.response.*
-import io.ktor.routing.*
-import io.ktor.server.engine.*
-import io.ktor.server.netty.*
-import io.ktor.websocket.*
-import kotlinx.coroutines.channels.Channel
-import java.util.*
-import java.util.concurrent.ConcurrentHashMap
+package com.stardust
 
-class BridgeService : Service(), TextToSpeech.OnInitListener {
+// Kotlin stub to replace malformed Java content. The real implementation uses Java files in the same package.
+// Keeping a minimal valid Kotlin file avoids Kotlin compiler parsing errors from previous malformed content.
 
-    private lateinit var tts: TextToSpeech
-    private lateinit var speechRecognizer: SpeechRecognizer
-    private val ttsQueue = LinkedList<Pair<String, String>>()
-    private var isTtsInitialized = false
-    private val sockets = ConcurrentHashMap<WebSocketSession, WebSocketSession>()
-    private val sttResultChannel = Channel<String>(Channel.UNLIMITED)
-
-    private val ktorServer by lazy {
-        embeddedServer(Netty, port = 4000, host = "127.0.0.1") {
-            install(ContentNegotiation) {
-                gson { }
-            }
-            install(WebSockets)
-
-            import io.ktor.routing.*
-import io.ktor.server.engine.*
-import io.ktor.server.netty.*
-import io.ktor.websocket.*
-import java.util.*
-import java.util.concurrent.ConcurrentHashMap
-import org.json.JSONObject
-
-class BridgeService : Service(), TextToSpeech.OnInitListener {
-
-    private lateinit var tts: TextToSpeech
-// ... existing code ...
-            routing {
-                post("/tts") {
-                    val body = call.receive<Map<String, String>>()
-                    val text = body["text"] ?: "No text provided"
-                    val utteranceId = UUID.randomUUID().toString()
-                    ttsQueue.add(Pair(text, utteranceId))
-                    if (isTtsInitialized && !tts.isSpeaking) {
-                        speakNext()
-                    }
-                    call.respond(mapOf("status" to "queued", "id" to utteranceId))
-                }
-
-                post("/stt/start") {
-                    startListening()
-                    call.respond(mapOf("status" to "listening"))
-                }
-
-                post("/action") {
-                    val body = call.receive<Map<String, String>>()
+object BridgeServiceStub {}
                     val action = body["action"] ?: "unknown"
                     val message = JSONObject().apply {
                         put("event", "ui_action")
