@@ -9,8 +9,8 @@ const BRIDGE_WS_URL = 'ws://127.0.0.1:4001/events';
 
 // Simple state machine
 const state = {
-    awaiting: null, // null | 'reply_decision' | 'reply_content'
-    context: {} // stores message context like JID
+    awaiting: null, // null | 'reply_decision' | 'reply_content' | 'send_message_recipient' | 'send_message_content' | 'read_message_query'
+    context: {} // stores message context like JID, message content, etc.
 };
 
 function sendEventToUi(event) {
@@ -63,6 +63,19 @@ function normalize(msg) {
         chatName: msg.key.remoteJid,
         direction: 'inbound'
     };
+}
+
+async function resolveRecipientToJid(recipient) {
+    // Simple check for phone number format (e.g., starts with +, or is all digits)
+    if (recipient.match(/^\+?\d+$/)) {
+        // Assuming it's a number, append @s.whatsapp.net if not already there
+        return recipient.includes('@s.whatsapp.net') ? recipient : `${recipient}@s.whatsapp.net`;
+    } else {
+        // Try to find JID by pushName from stored messages
+        const jid = await db.getJidByPushName(recipient);
+        if (jid) return jid;
+    }
+    return null; // Could not resolve
 }
 
 async function start() {
@@ -136,9 +149,96 @@ async function start() {
                     state.awaiting = null;
                     state.context = {};
                 }
+            } else if (state.awaiting === 'send_message_recipient') {
+                const recipient = transcript.replace(/send message to |to /g, '').trim();
+                if (recipient) {
+                    const jid = await resolveRecipientToJid(recipient);
+                    if (jid) {
+                        state.context.recipientJid = jid;
+                        state.context.recipientName = recipient;
+                        state.awaiting = 'send_message_content';
+                        await tts(`Okay, what message do you want to send to ${recipient}?`);
+                        await startStt();
+                    } else {
+                        await tts(`Sorry, I couldn't find a contact named or numbered ${recipient}. Please try again.`);
+                        state.awaiting = null;
+                        state.context = {};
+                    }
+                } else {
+                    await tts('I didn't catch the recipient. Please try again.');
+                    state.awaiting = null;
+                    state.context = {};
+                }
+            } else if (state.awaiting === 'send_message_content') {
+                try {
+                    await sock.sendMessage(state.context.recipientJid, { text: transcript });
+                    await tts(`Message sent to ${state.context.recipientName}.`);
+                } catch (e) {
+                    await tts('Sorry, I failed to send the message.');
+                    console.error('Failed to send message:', e);
+                } finally {
+                    state.awaiting = null;
+                    state.context = {};
+                }
+            } else if (state.awaiting === 'read_message_query') {
+                let contactMatch = transcript.match(/(from|for) (.*)/);
+                let contact = contactMatch ? contactMatch[2].trim() : null;
+                let limitMatch = transcript.match(/(last|latest) (\d+)/);
+                let limit = limitMatch ? parseInt(limitMatch[2]) : 1;
+
+                if (contact) {
+                    const jid = await resolveRecipientToJid(contact);
+                    if (jid) {
+                        const messages = await db.getMessagesByJid(jid, limit);
+                        if (messages.length > 0) {
+                            let responseText = `The last ${messages.length} messages from ${contact} are: `;
+                            messages.forEach((msg, index) => {
+                                responseText += `Message ${index + 1} at ${msg.time}: ${msg.text}. `;
+                            });
+                            await tts(responseText);
+                        } else {
+                            await tts(`No messages found from ${contact}.`);
+                        }
+                    } else {
+                        await tts(`Sorry, I couldn't find a contact named or numbered ${contact}.`);
+                    }
+                } else {
+                    await tts('I didn't catch the contact. Please try again.');
+                }
+                state.awaiting = null;
+                state.context = {};
+            }
+        } else if (evt.event === 'ui_action') {
+            switch (evt.action) {
+                case 'reply':
+                    // This case is for explicitly tapping 'reply' from the menu
+                    // The automatic reply flow from messages.upsert already sets state.awaiting
+                    // So, if we are not already in a reply flow, we can initiate it.
+                    if (state.awaiting === null) {
+                        await tts("Do you want to reply to the last message?");
+                        state.awaiting = 'reply_decision';
+                        // Need to set context.jid here if not already set by an incoming message
+                        // For now, assume context.jid is set by the last incoming message.
+                        // A more robust solution would involve storing the last message's JID persistently.
+                        await startStt();
+                    } else {
+                        await tts("I'm already in a conversation flow. Please finish that first.");
+                    }
+                    break;
+                case 'send_message':
+                    await tts("Who do you want to send a message to? Please say their name or number.");
+                    state.awaiting = 'send_message_recipient';
+                    await startStt();
+                    break;
+                case 'read_message':
+                    await tts("I'm listening. What message do you want me to read? For example, 'last message from John' or 'last two messages from 2348133859014'.");
+                    state.awaiting = 'read_message_query';
+                    await startStt();
+                    break;
             }
         }
     }
+
 }
 
 start().catch(console.error);

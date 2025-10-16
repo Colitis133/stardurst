@@ -78,10 +78,49 @@ function markFailed(id, errorMessage) {
   db.run("UPDATE queue SET status = 'failed', error_message = ? WHERE id = ?", errorMessage, id);
 }
 
+function getMessagesByJid(jid, limit = 1) {
+  return new Promise((resolve, reject) => {
+    db.all(`SELECT * FROM messages WHERE jid = ? ORDER BY timestamp DESC LIMIT ?`, [jid, limit], (err, rows) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(rows);
+      }
+    });
+  });
+}
+
+function getMessagesByPushName(pushName, limit = 1) {
+  return new Promise((resolve, reject) => {
+    db.all(`SELECT * FROM messages WHERE pushName = ? ORDER BY timestamp DESC LIMIT ?`, [pushName, limit], (err, rows) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(rows);
+      }
+    });
+  });
+}
+
+function getJidByPushName(pushName) {
+  return new Promise((resolve, reject) => {
+    db.get(`SELECT jid FROM messages WHERE pushName = ? LIMIT 1`, [pushName], (err, row) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(row ? row.jid : null);
+      }
+    });
+  });
+}
+
 module.exports = {
   insertMessage,
   addToQueue,
   getPendingQueue,
   markSent,
   markFailed,
+  getMessagesByJid,
+  getMessagesByPushName,
+  getJidByPushName,
 };

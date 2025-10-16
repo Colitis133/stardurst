@@ -67,6 +67,20 @@ class BridgeService : Service(), TextToSpeech.OnInitListener {
                     call.respond(mapOf("status" to "listening"))
                 }
 
+                post("/action") {
+                    val body = call.receive<Map<String, String>>()
+                    val action = body["action"] ?: "unknown"
+                    val message = JSONObject().apply {
+                        put("event", "ui_action")
+                        put("action", action)
+                    }.toString()
+
+                    sockets.keys.forEach { session ->
+                        session.send(Frame.Text(message))
+                    }
+                    call.respond(mapOf("status" to "action_received", "action" to action))
+                }
+
                 post("/secure/encrypt") {
                     val body = call.receive<Map<String, String>>()
                     val data = body["data"]
