@@ -4,13 +4,29 @@
     android:layout_height="match_parent"
     android:background="@android:color/black">
 
-    <TextView
-        android:id="@+id/logTextView"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="8dp"
-        android:textColor="@android:color/white"
-        android:textSize="12sp"
-        android:typeface="monospace" />
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/privacyNoticeTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:textColor="@android:color/holo_orange_light"
+            android:textSize="14sp"
+            android:text="Privacy Notice: These logs may contain sensitive information. Do not share them publicly." />
+
+        <TextView
+            android:id="@+id/logTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:textColor="@android:color/white"
+            android:textSize="12sp"
+            android:typeface="monospace" />
+
+    </LinearLayout>
 
 </ScrollView>

@@ -1,0 +1,69 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:gravity="center_horizontal"
+    tools:context=".PermissionExplanationActivity">
+
+    <TextView
+        android:id="@+id/permissionExplanationTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Permissions Required"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="24dp"/>
+
+    <TextView
+        android:id="@+id/recordAudioExplanation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="• Microphone (Record Audio): Needed to listen for your voice commands to the WhatsApp assistant." />
+
+    <Button
+        android:id="@+id/grantRecordAudioButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Grant Microphone Permission"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="16dp"/>
+
+    <TextView
+        android:id="@+id/overlayExplanation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="• Display over other apps (System Alert Window): Allows the floating bubble to appear on top of other applications." />
+
+    <Button
+        android:id="@+id/grantOverlayButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Grant Overlay Permission"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="16dp"/>
+
+    <TextView
+        android:id="@+id/batteryOptimizationExplanation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="• Ignore Battery Optimizations: Ensures the WhatsApp assistant can run reliably in the background without being stopped by the system." />
+
+    <Button
+        android:id="@+id/grantBatteryOptimizationButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Exempt from Battery Optimizations"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="24dp"/>
+
+    <Button
+        android:id="@+id/continueButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Continue"
+        android:enabled="false"/>
+
+</LinearLayout>

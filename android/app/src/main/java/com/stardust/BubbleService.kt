@@ -17,11 +17,13 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.Toast;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import org.json.JSONObject;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import android.provider.Settings;
 
 public class BubbleService extends Service {
 
@@ -45,6 +47,14 @@ public class BubbleService extends Service {
                 } else {
                     bubbleView.clearAnimation();
                 }
+            } else if (Settings.ACTION_MANAGE_OVERLAY_PERMISSION.equals(intent.getAction())) {
+                // This is a retry mechanism for overlay permission
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Settings.canDrawOverlays(context)) {
+                    // Permission granted, try setting up the bubble again
+                    setupBubbleView();
+                } else {
+                    Toast.makeText(context, "Overlay permission still not granted. Bubble will not appear.", Toast.LENGTH_LONG).show();
+                }
             }
         }
     };
@@ -65,9 +75,17 @@ public class BubbleService extends Service {
         setupMiniBubbles();
 
         LocalBroadcastManager.getInstance(this).registerReceiver(bubbleEventReceiver, new IntentFilter("com.stardust.TTS_SPEAKING"));
+        // Register receiver for overlay permission changes
+        registerReceiver(bubbleEventReceiver, new IntentFilter(Settings.ACTION_MANAGE_OVERLAY_PERMISSION));
     }
 
     private void setupBubbleView() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
+            Toast.makeText(this, "Overlay permission not granted. Cannot display bubble.", Toast.LENGTH_LONG).show();
+            // Do not add the bubble view, it will be retried when permission is granted
+            return;
+        }
+
         bubbleView = LayoutInflater.from(this).inflate(R.layout.bubble_layout, null);
         int layoutFlag = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ?
                 WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY :
@@ -88,6 +106,9 @@ public class BubbleService extends Service {
     }
 
     private void setupMiniBubbles() {
+        // Only setup mini bubbles if the main bubble is successfully added
+        if (bubbleView == null) return;
+
         replyBubble = createMiniBubble(R.drawable.ic_reply, "reply");
         sendBubble = createMiniBubble(R.drawable.ic_send, "send_message");
         readBubble = createMiniBubble(R.drawable.ic_read, "read_message");
@@ -246,5 +267,6 @@ public class BubbleService extends Service {
         if (sendBubble != null) windowManager.removeView(sendBubble);
         if (readBubble != null) windowManager.removeView(readBubble);
         LocalBroadcastManager.getInstance(this).unregisterReceiver(bubbleEventReceiver);
+        unregisterReceiver(bubbleEventReceiver);
     }
 }
