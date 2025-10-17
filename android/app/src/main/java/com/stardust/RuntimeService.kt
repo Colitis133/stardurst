@@ -9,13 +9,14 @@ import android.os.Build;
 import android.os.IBinder;
 import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-import android.util.Log;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.InputStreamReader;
 import org.json.JSONObject;
-import com.nodejsmobile.nodejs.NodeJs;
-import com.nodejsmobile.nodejs.NodeJsMessageListener;
 
 public class RuntimeService extends Service {
     private static final String CHANNEL_ID = "StardustRuntimeChannel";
+    private Process nodeProcess;
 
     @Override
     public void onCreate() {
@@ -31,36 +32,39 @@ public class RuntimeService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (!NodeJs.is  NodeJs.is  NodeJs.isNodeJsRunning()) {
-            NodeJs.startNodeWithArguments(new String[]{}); // Arguments are configured in build.gradle
-        }
+        new Thread(() -> {
+            try {
+                File runtimeDir = new File(getFilesDir(), "runtime");
+                ProcessBuilder pb = new ProcessBuilder("/system/bin/sh", "bootstrap.sh");
+                pb.directory(runtimeDir);
+                pb.redirectErrorStream(true);
+                nodeProcess = pb.start();
 
-        NodeJs.addNodeJsMessageListener(new NodeJsMessageListener() {
-            @Override
-            public void onMessage(String message) {
-                if (message.startsWith("STARDUST_EVENT:")) {
-                    try {
-                        JSONObject json = new JSONObject(message.substring("STARDUST_EVENT:".length()));
-                        Intent localIntent = new Intent("stardust-runtime-event");
-                        localIntent.putExtra("event", json.getString("event"));
-                        if (json.has("data")) {
-                            localIntent.putExtra("data", json.getString("data"));
+                BufferedReader reader = new BufferedReader(new InputStreamReader(nodeProcess.getInputStream()));
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    // Simple check if the line is a JSON object from our runtime
+                    if (line.startsWith("STARDUST_EVENT:")) {
+                        try {
+                            JSONObject json = new JSONObject(line.substring("STARDUST_EVENT:".length()));
+                            Intent localIntent = new Intent("stardust-runtime-event");
+                            localIntent.putExtra("event", json.getString("event"));
+                            if (json.has("data")) {
+                                localIntent.putExtra("data", json.getString("data"));
+                            }
+                            LocalBroadcastManager.getInstance(RuntimeService.this).sendBroadcast(localIntent);
+                        } catch (Exception e) {
+                            // Not a valid JSON event, just log it
+                            System.out.println("Node.js: " + line);
                         }
-                        LocalBroadcastManager.getInstance(RuntimeService.this).sendBroadcast(localIntent);
-                    } catch (Exception e) {
-                        Log.e("Node.js", "Error parsing STARDUST_EVENT: " + e.getMessage());
+                    } else {
+                        System.out.println("Node.js: " + line);
                     }
-                } else {
-                    Log.i("Node.js", message);
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-
-            @Override
-            public void onExit(int exitCode) {
-                Log.i("Node.js", "Node.js exited with code: " + exitCode);
-                // Handle Node.js exit, e.g., restart or notify user
-            }
-        });
+        }).start();
 
         return START_STICKY;
     }
@@ -68,10 +72,9 @@ public class RuntimeService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (NodeJs.isNodeJsRunning()) {
-            NodeJs.stopNode();
+        if (nodeProcess != null) {
+            nodeProcess.destroy();
         }
-        NodeJs.removeNodeJsMessageListener(null); // Remove all listeners
     }
 
     @Override
